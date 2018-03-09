@@ -1,0 +1,119 @@
+                         SoX: Sound eXchange
+                         -------------------
+
+SoX (Sound eXchange) is the Swiss Army knife of sound processing
+tools: it translates sound files between many different file formats,
+and can apply many sound effects and transforms, as well as doing
+basic analysis and providing input to more capable analysis and
+plotting tools.
+
+SoX is distributed under the GNU GPL and GNU LGPL. To be precise: the
+sox program is distributed under the GPL, while the library libst, in
+which most of SoX's functionality resides, is dual-licensed. Note that
+some optional components of libst are GPL only: if you use these, you
+must use libst under the GPL.
+
+Send bug fixes, enhancements and feature requests to
+sox-devel@lists.sourceforge.net, or post them to the relevant tracker
+at http://sourceforge.net/projects/sox/.
+
+This release understands:
+
+  o Raw files in various binary formats
+  o Raw textual data
+  o Amiga 8svx files
+  o Apple/SGI AIFF files
+  o SUN .au files
+    o PCM, u-law, A-law
+    o G7xx ADPCM files (read only)
+    o mutant DEC .au files
+    o NeXT .snd files
+  o AVR files
+  o CD-R (music CD format)
+  o CVS and VMS files (continuous variable slope)
+  o GSM files
+  o Macintosh HCOM files
+  o Amiga MAUD files
+  o MP3 files (with optional external library)
+  o IRCAM SoundFile files
+  o NIST SPHERE files
+  o Turtle beach SampleVision files
+  o Soundtool (DOS) files
+  o Yamaha TX-16W sampler files
+  o Sound Blaster .VOC files
+  o Ogg Vorbis files (with optional external library)
+  o FLAC files (with optional external library)
+  o Dialogic/OKI ADPCM files (.VOX)
+  o Microsoft .WAV files
+    o PCM, u-law, A-law
+    o MS ADPCM, IMA ADPCM
+    o GSM
+    o RIFX (big endian)
+  o Psion (palmtop) A-law WVE files and Record voice notes
+  o Maxis XA Audio files
+    o EA ADPCM (read support only, for now)
+  o Pseudo-file formats that allow direct playing/recording
+    from some audio devices under UNIX
+  o The "null" pseudo-file that reads and writes from/to nowhere
+
+Most sound formats are auto-detected.
+
+The sound effects include:
+
+  o Channel averaging, duplication, and removal (general mixer)
+  o Band-pass filters
+  o Band-reject filter
+  o Bass tone control
+  o Compress and Expand (compand) the dynamic range of a sample
+  o Chorus effect
+  o DCShift audio - useful to get the best volume adjustments
+  o De-emphasis filter
+  o Move sound stage of CD audio to in front of you (for headphone
+    use)
+  o Add an echo 
+  o Add a sequence of echos
+  o Fade in and out
+  o Apply a flanger effect
+  o Apply a high-pass filter
+  o Apply a low-pass filter
+  o Apply an equalizer effect
+  o Add dithering/masking noise to a signal
+  o Multi-band compander
+  o Pad with silence
+  o Pan sound between channels
+  o Apply a phaser effect
+  o Change the pitch of a sound file without affecting its speed
+  o Repeat audio data
+  o Change sampling rates using several different algorithms. A
+     'resample' and 'polyphase' effect use high-grade signal rate
+     changes using real signal theory!
+  o Apply a reverb effect
+  o Reverse the sound samples (to search for Satanic messages ;-)
+  o Detect periods of silence and start and stop processing based on
+    it
+  o Change the speed of samples being played (like speeding up the
+    motor on a tape recorder)
+  o Display general stats on a sound sample
+  o Stretch/shorten the duration of a sound file (without affecting
+    pitch)
+  o Swap stereo channels
+  o Create sounds with a simple synthesizer
+  o Treble tone control
+  o Trim audio data from beginning and end of file
+  o Apply a tremolo (a.k.a. vibrato) effect
+  o Volume adjustment
+  o Noise elimination using frequency profiling
+  o Resample using libsamplerate (aka Secret Rabbit code, optional
+    external library)
+
+Unless you're using a pre-compiled binary version, you will need to
+compile SoX as described in the INSTALL file.
+
+SoX is distributed with man pages, with plain text versions for those
+on systems without man.
+
+The majority of SoX features and source code are contributed by users.
+Thank you very much for making SoX a success! There are many new
+features wanted for SoX, listed on the feature request tracker at
+http://sourceforge.net/projects/sox/. Users are encouraged to
+implement them!

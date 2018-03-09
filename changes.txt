@@ -1,0 +1,22 @@
+July 10, 2009 - Version 1.002
+
+KME:  Added more punctuation symbols to the ones that align.py discards.
+
+KME:  Fixed a bug in how align.py handles hyphenated words (now properly handles lines with both truncated and hyphenated words).
+
+July 6, 2009
+
+Removed the YMMV line in the readme about the choice
+of Linux distro.
+
+Added make_package.sh, a script to build the tgz
+package. Must edit it to change version number.
+
+June 30, 2009 - Version 1.001
+
+Removed the -b, -p options since they are confusing.
+Noted that one must use HTK 3.4.1 with align.py.
+
+June 17, 2009 - Version 1.0
+
+Initial release of P2FA.

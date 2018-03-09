@@ -1,0 +1,28 @@
+#! /bin/sh
+#
+# src/libst-config.  Generated from libst-config.in by configure.
+#
+
+prefix="/usr/local"
+exec_prefix="${prefix}"
+includedir="${prefix}/include"
+libdir="${exec_prefix}/lib"
+libs=''
+
+case "$1" in
+--prefix)
+        echo $prefix;;
+--includedir)
+        echo $includedir;;
+--libdir)
+        echo $libdir;;
+--libs)
+        echo $libs;;
+--cflags)
+        echo "-L'$libdir' -I'$includedir'";;
+*)
+        echo "Usage: $0 [--prefix|--includedir|--libdir|--cflags|--libs]"
+        exit 1;;
+esac
+
+exit 0
