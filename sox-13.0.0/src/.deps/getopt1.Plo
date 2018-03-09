@@ -1,3 +1,0 @@
-getopt1.lo: getopt1.c stconfig.h
-
-stconfig.h:
