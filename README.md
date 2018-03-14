@@ -1,10 +1,10 @@
 # P2FA for Python3.x
 
-This P2FA is modified for Python3.x
+This P2FA is modified for Python3.x.
 
 ## Install HTK
 First, you need to download HTK source code (http://htk.eng.cam.ac.uk/).
-This HTK installation guide can be found from [Link](https://github.com/prosodylab/Prosodylab-Aligner)  
+This HTK installation guide is retrieved from [Link](https://github.com/prosodylab/Prosodylab-Aligner)  
 
 Unzip HTK-3.4.1.tar.gz file
 

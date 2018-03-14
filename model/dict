@@ -127091,17 +127091,17 @@ ZZZZ  Z Z
 {LG}  lg
 {LS}  ls
 {NS}  ns
-{SL} sil
-sil sil
+{SL}  sil
+sil  sil
 silence  sil
-sp sp
-!ENTER []
-!EXIT []
-HHUW  HH UW1
-HHIY  HH IY1
-HHAW  HH AW1
-HHAH  HH AH1
-HHAA  HH AA1
-HHOW  HH OW1
-HHAE  HH AE1
-HHEH  HH EH1
+sp  sp
+!ENTER  []
+!EXIT  []
+H0II  HH IY1
+H0AA  HH AH1
+H0OO  HH OW1
+H0QQ  HH AE1
+H0UU  HH UW1
+H0VV  HH OW0
+H0XX  HH UH0
+H0YE  HH EH0
