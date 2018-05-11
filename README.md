@@ -1,6 +1,6 @@
 # P2FA for Python3.x
 
-This P2FA is modified for Python3.x.
+This is a modified version of P2FA for Python3.x compatibility. Everything else remains as same as the original P2FA.
 
 ## Install HTK
 First, you need to download HTK source code (http://htk.eng.cam.ac.uk/).
