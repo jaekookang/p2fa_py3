@@ -50,8 +50,9 @@ $ python align.py examples/ploppy.wav examples/ploppy.txt examples/ploppy.TextGr
 
 ![image_of_ploppy_dot_png](_tmp/ploppy.png)
 
-## Source
+## Reference
 - http://www.ling.upenn.edu/phonetics/p2fa/
 - Jiahong Yuan and Mark Liberman. 2008. Speaker identification on the SCOTUS corpus. Proceedings of Acoustics '08.
 - https://github.com/prosodylab/Prosodylab-Aligner (P2FA seems better than Prosodylab-Aligner based on my qualitative evaluation)
-- State-level aligner: [Link](https://github.com/jaekookang/p2fa_state_aligner)
+- English HMM-state level aligner: [Link](https://github.com/jaekookang/p2fa_state_aligner)
+- Korean Forced Aligner: [Link](https://github.com/EMCSlabs/Programs/tree/master/Korean_FA) from EMCSLabs. 
