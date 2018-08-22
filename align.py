@@ -9,7 +9,8 @@
 			
 	You can also import this file as a module and use the functions directly.
 
-	2018-02-22 JK, This file was modified for Python3.x 
+	2018-02-22 JK, This file was modified for Python3.x
+	2018-08-21  papagandalf, This file was modified so that it can be called from Python code
 """
 
 import os
@@ -19,9 +20,7 @@ import wave
 import re
 
 
-def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end):
-    global sr_models
-
+def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end, sr_models):
     if os.path.exists(out_wav) and False:
         f = wave.open(out_wav, 'r')
         SR = f.getframerate()
@@ -48,7 +47,7 @@ def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end):
               " to " + str(new_sr) + soxopts + "...")
         SR = new_sr
         os.system("sox " + orig_wav + " -r " + str(SR) +
-                  " " + out_wav + " polyphase" + soxopts)
+                  " " + out_wav + " " + soxopts)
     else:
         # print("Using wav file, already at sampling rate " + str(SR) + ".")
         os.system("cp -f " + orig_wav + " " + out_wav)
@@ -256,8 +255,68 @@ def getopt2(name, opts, default=None):
     return value[0]
 
 
-if __name__ == '__main__':
+def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_override=None, model_path=None):
+    surround_token = "sp"
+    between_token = "sp"
 
+    # If no model directory was said explicitly, get directory containing this script.
+    hmmsubdir = ""
+    sr_models = None
+    if model_path == None:
+        model_path = os.path.dirname(os.path.realpath(__file__)) + "/model"
+        hmmsubdir = "FROM-SR"
+        # sample rates for which there are acoustic models set up, otherwise
+        # the signal must be resampled to one of these rates.
+        sr_models = [8000, 11025, 16000]
+
+    if sr_override != None and sr_models != None and not sr_override in sr_models:
+        raise Exception("invalid sample rate: not an acoustic model available")
+
+    word_dictionary = "./tmp/dict"
+    input_mlf = './tmp/tmp.mlf'
+    output_mlf = './tmp/aligned.mlf'
+
+    # create working directory
+    prep_working_directory()
+
+    # create ./tmp/dict by concatening our dict with a local one
+    if os.path.exists("dict.local"):
+        os.system("cat " + model_path + "/dict dict.local > " + word_dictionary)
+    else:
+        os.system("cat " + model_path + "/dict > " + word_dictionary)
+
+    # prepare wavefile: do a resampling if necessary
+    tmpwav = "./tmp/sound.wav"
+    SR = prep_wav(wavfile, tmpwav, sr_override, wave_start, wave_end, sr_models)
+
+    if hmmsubdir == "FROM-SR":
+        hmmsubdir = "/" + str(SR)
+
+    # prepare mlfile
+    prep_mlf(trsfile, input_mlf, word_dictionary,
+             surround_token, between_token)
+
+    # prepare scp files
+    prep_scp(tmpwav)
+
+    # generate the plp file using a given configuration file for HCopy
+    create_plp(model_path + hmmsubdir + '/config')
+
+    # run Verterbi decoding
+    #print("Running HVite...")
+    mpfile = model_path + '/monophones'
+    if not os.path.exists(mpfile):
+        mpfile = model_path + '/hmmnames'
+    viterbi(input_mlf, word_dictionary, output_mlf, mpfile, model_path + hmmsubdir)
+
+    # output the alignment as a Praat TextGrid
+    writeTextGrid(outfile, readAlignedMLF(output_mlf, SR, float(wave_start)))
+
+    # clean directory
+    delete_working_directory()
+
+
+if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "r:s:e:", ["model="])
 
@@ -280,65 +339,10 @@ if __name__ == '__main__':
             between_token = None
 
         mypath = getopt2("--model", opts, None)
-    except:
+        align(wavfile, trsfile, outfile, wave_start, wave_end, sr_override, mypath)
+    except Exception as e:
+        print('Failed.', exc_info=e)
         print(__doc__)
         (type, value, traceback) = sys.exc_info()
         print(value)
         sys.exit(0)
-
-    # If no model directory was said explicitly, get directory containing this script.
-    hmmsubdir = ""
-    sr_models = None
-    if mypath == None:
-        mypath = os.path.dirname(os.path.abspath(sys.argv[0])) + "/model"
-        hmmsubdir = "FROM-SR"
-        # sample rates for which there are acoustic models set up, otherwise
-        # the signal must be resampled to one of these rates.
-        sr_models = [8000, 11025, 16000]
-
-    if sr_override != None and sr_models != None and not sr_override in sr_models:
-        raise Exception("invalid sample rate: not an acoustic model available")
-
-    word_dictionary = "./tmp/dict"
-    input_mlf = './tmp/tmp.mlf'
-    output_mlf = './tmp/aligned.mlf'
-
-    # create working directory
-    prep_working_directory()
-
-    # create ./tmp/dict by concatening our dict with a local one
-    if os.path.exists("dict.local"):
-        os.system("cat " + mypath + "/dict dict.local > " + word_dictionary)
-    else:
-        os.system("cat " + mypath + "/dict > " + word_dictionary)
-
-    # prepare wavefile: do a resampling if necessary
-    tmpwav = "./tmp/sound.wav"
-    SR = prep_wav(wavfile, tmpwav, sr_override, wave_start, wave_end)
-
-    if hmmsubdir == "FROM-SR":
-        hmmsubdir = "/" + str(SR)
-
-    # prepare mlfile
-    prep_mlf(trsfile, input_mlf, word_dictionary,
-             surround_token, between_token)
-
-    # prepare scp files
-    prep_scp(tmpwav)
-
-    # generate the plp file using a given configuration file for HCopy
-    create_plp(mypath + hmmsubdir + '/config')
-
-    # run Verterbi decoding
-    #print("Running HVite...")
-    mpfile = mypath + '/monophones'
-    if not os.path.exists(mpfile):
-        mpfile = mypath + '/hmmnames'
-    viterbi(input_mlf, word_dictionary, output_mlf, mpfile, mypath + hmmsubdir)
-
-    # output the alignment as a Praat TextGrid
-    writeTextGrid(outfile, readAlignedMLF(output_mlf, SR, float(wave_start)))
-
-    # clean directory
-    delete_working_directory()
-    

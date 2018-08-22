@@ -9,3 +9,4 @@ __pycache__/
 sample
 sox*
 tmp
+.idea/
