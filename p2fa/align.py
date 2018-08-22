@@ -235,7 +235,10 @@ def prep_working_directory():
 
 
 def delete_working_directory():
-    shutil.rmtree(TEMP_DIR)
+    try:
+        shutil.rmtree(TEMP_DIR)
+    except OSError:
+        pass
 
 
 def prep_scp(wavfile):
