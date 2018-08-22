@@ -14,10 +14,12 @@
 """
 
 import os
-import sys
-import getopt
 import wave
 import re
+import shutil
+import tempfile
+
+TEMP_DIR = os.path.join(tempfile.gettempdir(), 'p2fa')
 
 
 def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end, sr_models):
@@ -228,40 +230,33 @@ def write_text_grid(outfile, word_alignments):
 
 
 def prep_working_directory():
-    os.system("rm -r -f ./tmp")
-    os.system("mkdir ./tmp")
+    delete_working_directory()
+    os.mkdir(TEMP_DIR)
 
 
 def delete_working_directory():
-    os.system('rm -r -f ./tmp')
+    shutil.rmtree(TEMP_DIR)
 
 
 def prep_scp(wavfile):
-    fw = open('./tmp/codetr.scp', 'w')
-    fw.write(wavfile + ' ./tmp/tmp.plp\n')
+    fw = open(os.path.join(TEMP_DIR, 'codetr.scp'), 'w')
+    fw.write(wavfile + ' ' + os.path.join(TEMP_DIR, 'tmp.plp') + '\n')
     fw.close()
-    fw = open('./tmp/test.scp', 'w')
-    fw.write('./tmp/tmp.plp\n')
+    fw = open(os.path.join(TEMP_DIR, 'test.scp'), 'w')
+    fw.write(os.path.join(TEMP_DIR, 'tmp.plp') + '\n')
     fw.close()
 
 
 def create_plp(hcopy_config):
-    os.system('HCopy -T 1 -C ' + hcopy_config + ' -S ./tmp/codetr.scp')
+    os.system('HCopy -T 1 -C ' + hcopy_config + ' -S ' + os.path.join(TEMP_DIR, 'codetr.scp'))
 
 
 def viterbi(input_mlf, word_dictionary, output_mlf, phoneset, hmmdir):
     os.system(
-        'HVite -T 1 -a -m -I ' + input_mlf + ' -H ' + hmmdir + '/macros -H ' + hmmdir +
-        '/hmmdefs  -S ./tmp/test.scp -i ' +
+        'HVite -T 1 -a -m -I ' + input_mlf + ' -H ' + os.path.join(hmmdir, 'macros') + ' -H ' +
+        os.path.join(hmmdir, 'hmmdefs') + ' -S ' + os.path.join(TEMP_DIR, 'test.scp') + ' -i ' +
         output_mlf + ' -p 0.0 -s 5.0 ' + word_dictionary + ' ' + phoneset +
-        ' > ./tmp/aligned.results')
-
-
-def getopt2(name, options, default=None):
-    val = [v for n, v in options if n == name]
-    if len(val) == 0:
-        return default
-    return value[0]
+        ' > ' + os.path.join(TEMP_DIR, 'aligned.results'))
 
 
 def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_override=None, model_path=None):
@@ -281,9 +276,9 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     if sr_override is not None and sr_models is not None and sr_override not in sr_models:
         raise Exception("invalid sample rate: not an acoustic model available")
 
-    word_dictionary = "./tmp/dict"
-    input_mlf = './tmp/tmp.mlf'
-    output_mlf = './tmp/aligned.mlf'
+    word_dictionary = os.path.join(TEMP_DIR, 'dict')
+    input_mlf = os.path.join(TEMP_DIR, 'tmp.mlf')
+    output_mlf = os.path.join(TEMP_DIR, 'aligned.mlf')
 
     # create working directory
     prep_working_directory()
@@ -295,11 +290,11 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
         os.system("cat " + model_path + "/dict > " + word_dictionary)
 
     # prepare wavefile: do a resampling if necessary
-    tmpwav = "./tmp/sound.wav"
+    tmpwav = os.path.join(TEMP_DIR, 'sound.wav')
     sr = prep_wav(wavfile, tmpwav, sr_override, wave_start, wave_end, sr_models)
 
     if hmmsubdir == "FROM-SR":
-        hmmsubdir = "/" + str(sr)
+        hmmsubdir = str(sr)
 
     # prepare mlfile
     prep_mlf(trsfile, input_mlf, word_dictionary,
@@ -309,14 +304,14 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     prep_scp(tmpwav)
 
     # generate the plp file using a given configuration file for HCopy
-    create_plp(model_path + hmmsubdir + '/config')
+    create_plp(os.path.join(model_path, hmmsubdir, 'config'))
 
     # run Verterbi decoding
     # print("Running HVite...")
-    mpfile = model_path + '/monophones'
+    mpfile = os.path.join(model_path, 'monophones')
     if not os.path.exists(mpfile):
-        mpfile = model_path + '/hmmnames'
-    viterbi(input_mlf, word_dictionary, output_mlf, mpfile, model_path + hmmsubdir)
+        mpfile = os.path.join(model_path, 'hmmnames')
+    viterbi(input_mlf, word_dictionary, output_mlf, mpfile, os.path.join(model_path, hmmsubdir))
 
     _alignments = read_aligned_mlf(output_mlf, sr, float(wave_start))
     phoneme_alignments, word_alignments = make_alignment_lists(_alignments)
@@ -328,28 +323,3 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     # clean directory
     delete_working_directory()
     return phoneme_alignments, word_alignments
-
-
-if __name__ == '__main__':
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "r:s:e:", ["model="])
-
-        # get the three mandatory arguments
-        if len(args) != 3:
-            raise ValueError(
-                "Specify wavefile, a transcript file, and an output file!")
-
-        wav_file, trs_file, out_file = args
-
-        sr_override_ = getopt2("-r", opts, None)
-        wave_start_ = getopt2("-s", opts, "0.0")
-        wave_end_ = getopt2("-e", opts, None)
-
-        mypath = getopt2("--model", opts, None)
-        align(wav_file, trs_file, out_file, wave_start_, wave_end_, sr_override_, mypath)
-    except Exception as e:
-        print('Failed.', exc_info=e)
-        print(__doc__)
-        (type, value, traceback) = sys.exc_info()
-        print(value)
-        sys.exit(0)

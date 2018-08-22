@@ -13,6 +13,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/papagandalf/p2fa_py3",
     packages=setuptools.find_packages(),
+    package_data={'p2fa': ['model/*/*']},
+    scripts=['bin/p2fa'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",

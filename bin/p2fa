@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import sys
+import getopt
+
+from p2fa import align
+
+def getopt2(name, options, default=None):
+    val = [v for n, v in options if n == name]
+    if len(val) == 0:
+        return default
+    return value[0]
+
+#try:
+opts, args = getopt.getopt(sys.argv[1:], "r:s:e:", ["model="])
+
+# get the three mandatory arguments
+if len(args) != 3:
+    raise ValueError(
+        "Specify wavefile, a transcript file, and an output file!")
+
+wav_file, trs_file, out_file = args
+
+sr_override_ = getopt2("-r", opts, None)
+wave_start_ = getopt2("-s", opts, "0.0")
+wave_end_ = getopt2("-e", opts, None)
+
+mypath = getopt2("--model", opts, None)
+align.align(wav_file, trs_file, out_file, wave_start_, wave_end_, sr_override_, mypath)
+#except Exception as e:
+#    print(__doc__)
+#    (type, value, traceback) = sys.exc_info()
+#    print(value)
+#    sys.exit(0)
