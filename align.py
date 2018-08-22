@@ -3,14 +3,14 @@
 """ Command-line usage:
       python align.py [options] wave_file transcript_file output_file
       where options may include:
-      	-r sampling_rate -- override which sample rate model to use, one of 8000, 11025, and 16000
+        -r sampling_rate -- override which sample rate model to use, one of 8000, 11025, and 16000
         -s start_time    -- start of portion of wavfile to align (in seconds, default 0)
         -e end_time      -- end of portion of wavfile to align (in seconds, defaul to end)
-			
-	You can also import this file as a module and use the functions directly.
 
-	2018-02-22 JK, This file was modified for Python3.x
-	2018-08-21  papagandalf, This file was modified so that it can be called from Python code
+    You can also import this file as a module and use the functions directly.
+
+    2018-02-22 JK, This file was modified for Python3.x
+    2018-08-21  papagandalf, This file was modified so that it can be called from Python code
 """
 
 import os
@@ -23,24 +23,25 @@ import re
 def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end, sr_models):
     if os.path.exists(out_wav) and False:
         f = wave.open(out_wav, 'r')
-        SR = f.getframerate()
+        sr = f.getframerate()
         f.close()
-        print("Already re-sampled the wav file to " + str(SR))
-        return SR
+        print("Already re-sampled the wav file to " + str(sr))
+        return sr
 
     f = wave.open(orig_wav, 'r')
     SR = f.getframerate()
     f.close()
 
     soxopts = ""
-    if float(wave_start) != 0.0 or wave_end != None:
+    if float(wave_start) != 0.0 or wave_end is not None:
         soxopts += " trim " + wave_start
-        if wave_end != None:
+        if wave_end is not None:
             soxopts += " " + str(float(wave_end) - float(wave_start))
 
-    if (sr_models != None and SR not in sr_models) or (sr_override != None and SR != sr_override) or soxopts != "":
+    if (sr_models is not None and SR not in sr_models) or (
+            sr_override is not None and SR != sr_override) or soxopts != "":
         new_sr = 11025
-        if sr_override != None:
+        if sr_override is not None:
             new_sr = sr_override
 
         print("Resampling wav file from " + str(SR) +
@@ -56,14 +57,14 @@ def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end, sr_models):
 
 
 def prep_mlf(trsfile, mlffile, word_dictionary, surround, between):
-        # Read in the dictionary to ensure all of the words
-        # we put in the MLF file are in the dictionary. Words
-        # that are not are skipped with a warning.
+    # Read in the dictionary to ensure all of the words
+    # we put in the MLF file are in the dictionary. Words
+    # that are not are skipped with a warning.
     f = open(word_dictionary, 'r')
-    dict = {}  # build hash table
+    the_dict = {}  # build hash table
     for line in f.readlines():
         if line != "\n" and line != "":
-            dict[line.split()[0]] = True
+            the_dict[line.split()[0]] = True
     f.close()
 
     f = open(trsfile, 'r')
@@ -72,34 +73,35 @@ def prep_mlf(trsfile, mlffile, word_dictionary, surround, between):
 
     words = []
 
-    if surround != None:
+    if surround is not None:
         words += surround.split(',')
 
     i = 0
 
-    # this pattern matches hyphenated words, such as TWENTY-TWO; however, it doesn't work with longer things like SOMETHING-OR-OTHER
-    hyphenPat = re.compile(r'([A-Z]+)-([A-Z]+)')
+    # this pattern matches hyphenated words, such as TWENTY-TWO;
+    # however, it doesn't work with longer things like SOMETHING-OR-OTHER
+    hyphen_pat = re.compile(r'([A-Z]+)-([A-Z]+)')
 
-    while (i < len(lines)):
+    while i < len(lines):
         txt = lines[i].replace('\n', '')
         txt = txt.replace('{breath}', '{BR}').replace('&lt;noise&gt;', '{NS}')
         txt = txt.replace('{laugh}', '{LG}').replace('{laughter}', '{LG}')
         txt = txt.replace('{cough}', '{CG}').replace('{lipsmack}', '{LS}')
 
         for pun in [',', '.', ':', ';', '!', '?', '"', '%', '(', ')', '--', '---']:
-            txt = txt.replace(pun,  '')
+            txt = txt.replace(pun, '')
 
         txt = txt.upper()
 
         # break up any hyphenated words into two separate words
-        txt = re.sub(hyphenPat, r'\1 \2', txt)
+        txt = re.sub(hyphen_pat, r'\1 \2', txt)
 
         txt = txt.split()
 
         for wrd in txt:
-            if (wrd in dict):
+            if wrd in the_dict:
                 words.append(wrd)
-                if between != None:
+                if between is not None:
                     words.append(between)
             else:
                 print("SKIPPING WORD", wrd)
@@ -107,16 +109,16 @@ def prep_mlf(trsfile, mlffile, word_dictionary, surround, between):
         i += 1
 
     # remove the last 'between' token from the end
-    if between != None:
+    if between is not None:
         words.pop()
 
-    if surround != None:
+    if surround is not None:
         words += surround.split(',')
 
-    writeInputMLF(mlffile, words)
+    write_input_mlf(mlffile, words)
 
 
-def writeInputMLF(mlffile, words):
+def write_input_mlf(mlffile, words):
     fw = open(mlffile, 'w')
     fw.write('#!MLF!#\n')
     fw.write('"*/tmp.lab"\n')
@@ -126,11 +128,11 @@ def writeInputMLF(mlffile, words):
     fw.close()
 
 
-def readAlignedMLF(mlffile, SR, wave_start):
-        # This reads a MLFalignment output  file with phone and word
-        # alignments and returns a list of words, each word is a list containing
-        # the word label followed by the phones, each phone is a tuple
-        # (phone, start_time, end_time) with times in seconds.
+def read_aligned_mlf(mlffile, sr, wave_start):
+    # This reads a MLFalignment output  file with phone and word
+    # alignments and returns a list of words, each word is a list containing
+    # the word label followed by the phones, each phone is a tuple
+    # (phone, start_time, end_time) with times in seconds.
 
     f = open(mlffile, 'r')
     lines = [l.rstrip() for l in f.readlines()]
@@ -141,16 +143,16 @@ def readAlignedMLF(mlffile, SR, wave_start):
 
     j = 2
     ret = []
-    while (lines[j] != '.'):
+    while lines[j] != '.':
         # Is this the start of a word; do we have a word label?
-        if (len(lines[j].split()) == 5):
+        if len(lines[j].split()) == 5:
             # Make a new word list in ret and put the word label at the beginning
             wrd = lines[j].split()[4]
             ret.append([wrd])
 
         # Append this phone to the latest word (sub-)list
         ph = lines[j].split()[2]
-        if (SR == 11025):
+        if sr == 11025:
             st = (float(lines[j].split()[0]) /
                   10000000.0 + 0.0125) * (11000.0 / 11025.0)
             en = (float(lines[j].split()[1]) /
@@ -166,7 +168,7 @@ def readAlignedMLF(mlffile, SR, wave_start):
     return ret
 
 
-def writeTextGrid(outfile, word_alignments):
+def write_text_grid(outfile, word_alignments):
     # make the list of just phone alignments
     phons = []
     for wrd in word_alignments:
@@ -244,13 +246,16 @@ def create_plp(hcopy_config):
 
 
 def viterbi(input_mlf, word_dictionary, output_mlf, phoneset, hmmdir):
-    os.system('HVite -T 1 -a -m -I ' + input_mlf + ' -H ' + hmmdir + '/macros -H ' + hmmdir + '/hmmdefs  -S ./tmp/test.scp -i ' +
-              output_mlf + ' -p 0.0 -s 5.0 ' + word_dictionary + ' ' + phoneset + ' > ./tmp/aligned.results')
+    os.system(
+        'HVite -T 1 -a -m -I ' + input_mlf + ' -H ' + hmmdir + '/macros -H ' + hmmdir +
+        '/hmmdefs  -S ./tmp/test.scp -i ' +
+        output_mlf + ' -p 0.0 -s 5.0 ' + word_dictionary + ' ' + phoneset +
+        ' > ./tmp/aligned.results')
 
 
-def getopt2(name, opts, default=None):
-    value = [v for n, v in opts if n == name]
-    if len(value) == 0:
+def getopt2(name, options, default=None):
+    val = [v for n, v in options if n == name]
+    if len(val) == 0:
         return default
     return value[0]
 
@@ -262,14 +267,14 @@ def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_overrid
     # If no model directory was said explicitly, get directory containing this script.
     hmmsubdir = ""
     sr_models = None
-    if model_path == None:
+    if model_path is None:
         model_path = os.path.dirname(os.path.realpath(__file__)) + "/model"
         hmmsubdir = "FROM-SR"
         # sample rates for which there are acoustic models set up, otherwise
         # the signal must be resampled to one of these rates.
         sr_models = [8000, 11025, 16000]
 
-    if sr_override != None and sr_models != None and not sr_override in sr_models:
+    if sr_override is not None and sr_models is not None and sr_override not in sr_models:
         raise Exception("invalid sample rate: not an acoustic model available")
 
     word_dictionary = "./tmp/dict"
@@ -287,10 +292,10 @@ def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_overrid
 
     # prepare wavefile: do a resampling if necessary
     tmpwav = "./tmp/sound.wav"
-    SR = prep_wav(wavfile, tmpwav, sr_override, wave_start, wave_end, sr_models)
+    sr = prep_wav(wavfile, tmpwav, sr_override, wave_start, wave_end, sr_models)
 
     if hmmsubdir == "FROM-SR":
-        hmmsubdir = "/" + str(SR)
+        hmmsubdir = "/" + str(sr)
 
     # prepare mlfile
     prep_mlf(trsfile, input_mlf, word_dictionary,
@@ -303,14 +308,14 @@ def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_overrid
     create_plp(model_path + hmmsubdir + '/config')
 
     # run Verterbi decoding
-    #print("Running HVite...")
+    # print("Running HVite...")
     mpfile = model_path + '/monophones'
     if not os.path.exists(mpfile):
         mpfile = model_path + '/hmmnames'
     viterbi(input_mlf, word_dictionary, output_mlf, mpfile, model_path + hmmsubdir)
 
     # output the alignment as a Praat TextGrid
-    writeTextGrid(outfile, readAlignedMLF(output_mlf, SR, float(wave_start)))
+    write_text_grid(outfile, read_aligned_mlf(output_mlf, sr, float(wave_start)))
 
     # clean directory
     delete_working_directory()
@@ -325,21 +330,14 @@ if __name__ == '__main__':
             raise ValueError(
                 "Specify wavefile, a transcript file, and an output file!")
 
-        wavfile, trsfile, outfile = args
+        wav_file, trs_file, out_file = args
 
-        sr_override = getopt2("-r", opts, None)
-        wave_start = getopt2("-s", opts, "0.0")
-        wave_end = getopt2("-e", opts, None)
-        surround_token = "sp"  # getopt2("-p", opts, 'sp')
-        between_token = "sp"  # getopt2("-b", opts, 'sp')
-
-        if surround_token.strip() == "":
-            surround_token = None
-        if between_token.strip() == "":
-            between_token = None
+        sr_override_ = getopt2("-r", opts, None)
+        wave_start_ = getopt2("-s", opts, "0.0")
+        wave_end_ = getopt2("-e", opts, None)
 
         mypath = getopt2("--model", opts, None)
-        align(wavfile, trsfile, outfile, wave_start, wave_end, sr_override, mypath)
+        align(wav_file, trs_file, out_file, wave_start_, wave_end_, sr_override_, mypath)
     except Exception as e:
         print('Failed.', exc_info=e)
         print(__doc__)
