@@ -168,7 +168,7 @@ def read_aligned_mlf(mlffile, sr, wave_start):
     return ret
 
 
-def write_text_grid(outfile, word_alignments):
+def make_alignment_lists(word_alignments):
     # make the list of just phone alignments
     phons = []
     for wrd in word_alignments:
@@ -185,7 +185,11 @@ def write_text_grid(outfile, word_alignments):
             continue
         # word label, first phone start time, last phone end time
         wrds.append([wrd[0], wrd[1][1], wrd[-1][2]])
+    return phons, wrds
 
+
+def write_text_grid(outfile, word_alignments):
+    phons, wrds = make_alignment_lists(word_alignments)
     # write the phone interval tier
     fw = open(outfile, 'w')
     fw.write('File type = "ooTextFile short"\n')
@@ -260,7 +264,7 @@ def getopt2(name, options, default=None):
     return value[0]
 
 
-def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_override=None, model_path=None):
+def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_override=None, model_path=None):
     surround_token = "sp"
     between_token = "sp"
 
@@ -314,11 +318,16 @@ def align(wavfile, trsfile, outfile, wave_start='0.0', wave_end=None, sr_overrid
         mpfile = model_path + '/hmmnames'
     viterbi(input_mlf, word_dictionary, output_mlf, mpfile, model_path + hmmsubdir)
 
+    _alignments = read_aligned_mlf(output_mlf, sr, float(wave_start))
+    phoneme_alignments, word_alignments = make_alignment_lists(_alignments)
+
     # output the alignment as a Praat TextGrid
-    write_text_grid(outfile, read_aligned_mlf(output_mlf, sr, float(wave_start)))
+    if outfile is not None:
+        write_text_grid(outfile, _alignments)
 
     # clean directory
     delete_working_directory()
+    return phoneme_alignments, word_alignments
 
 
 if __name__ == '__main__':
