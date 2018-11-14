@@ -262,7 +262,7 @@ def viterbi(input_mlf, word_dictionary, output_mlf, phoneset, hmmdir):
         ' > ' + os.path.join(TEMP_DIR, 'aligned.results'))
 
 
-def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_override=None, model_path=None):
+def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_override=None, model_path=None, custom_dict=None):
     surround_token = "sp"
     between_token = "sp"
 
@@ -287,10 +287,13 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     prep_working_directory()
 
     # create ./tmp/dict by concatening our dict with a local one
-    if os.path.exists("dict.local"):
-        os.system("cat " + model_path + "/dict dict.local > " + word_dictionary)
+    if custom_dict is not None:
+        os.system("cat " + model_path + "/dict " + custom_dict + " > " + word_dictionary)
     else:
-        os.system("cat " + model_path + "/dict > " + word_dictionary)
+        if os.path.exists("dict.local"):
+            os.system("cat " + model_path + "/dict dict.local > " + word_dictionary)
+        else:
+            os.system("cat " + model_path + "/dict > " + word_dictionary)
 
     # prepare wavefile: do a resampling if necessary
     tmpwav = os.path.join(TEMP_DIR, 'sound.wav')
