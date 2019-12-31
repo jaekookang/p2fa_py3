@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="",
     packages=setuptools.find_packages(),
-    package_data={'p2fa': ['model/*/*']},
+    package_data={'p2fa': ['model/*', 'model/*/*']},
     scripts=['bin/p2fa'],
     classifiers=[
         "Programming Language :: Python :: 3",
