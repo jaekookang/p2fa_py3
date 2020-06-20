@@ -5,9 +5,10 @@ Everything else remains the same as the original P2FA.
 Forced alignment helps to align linguistic units (e.g., phoneme or
 words) with the corresponding sound file. All you need is to have a
 sound file with a transcription file.
-The output will be .TextGrid file with time-aligned phone and word tiers.
+The output will be .TextGrid file with time-aligned phone, word and
+optionally state-level tiers.
 
-This was tested on macOS Sierra and Arch Linux.
+This was tested on macOS Catalina and Arch Linux.
 
 ## Install HTK
 First, you need to download HTK source code (http://htk.eng.cam.ac.uk/).
@@ -41,6 +42,30 @@ $ make -j4 all
 $ sudo make -j4 install
 ```
 
+**Note:** For macOS, you may need to follow these steps before compiling HTK:
+
+```bash
+# Add CPPFLAGS
+$ export CPPFLAGS=-I/opt/X11/include
+
+# If the above doesn't work, do 
+$ ln -s /opt/X11/include/X11 /usr/local/include/X11
+
+# Replace line 21 (#include <malloc.h>) of HTKLib/strarr.c as below
+#   include <malloc/malloc.h> 
+
+# Replace line 1650 (labid != splabid) of HTKLib/HRec.c as below
+#   labpr != splabid
+# This step will prevent "ERROR [+8522] LatFromPaths: Align have dur<=0"
+# See: https://speechtechie.wordpress.com/2009/06/12/using-htk-3-4-1-on-mac-os-10-5/
+
+# Compile with options if necessary
+$ ./configure
+$ make all
+$ maek install
+```
+
+
 ## Install sox
 
 ```bash
@@ -71,11 +96,19 @@ You can invoke the aligner from your code:
 from p2fa import align
 
 phoneme_alignments, word_alignments = align.align('WAV_FILE_PATH', 'TRANSCRIPTION_FILE_PATH')
+
+# or 
+
+phoneme_alignments, word_alignments, state_alignments = align.align('WAV_FILE_PATH', 'TRANSCRIPTION_FILE_PATH', state_align=True)
 ```
 
 ## Result
 
 ![image_of_ploppy_dot_png](p2fa/_tmp/ploppy.png)
+
+With state-alignments
+
+![image_of_ploppy_dot_png](p2fa/_tmp/ploppy_state.png)
 
 ## References
 - http://www.ling.upenn.edu/phonetics/p2fa/

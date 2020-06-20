@@ -21,5 +21,5 @@ class P2FATest(unittest.TestCase):
         self.assertTrue(filecmp.cmp(self.outfile, self.true_alignment_file))
 
     def test_standalone_aligner(self):
-        subprocess.run(['p2fa', self.input_wav, self.input_transcription, self.outfile])
+        subprocess.run(['p2fa/align.py', self.input_wav, self.input_transcription, self.outfile])
         self.assertTrue(filecmp.cmp(self.outfile, self.true_alignment_file))
