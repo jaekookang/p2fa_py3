@@ -7,7 +7,7 @@ from p2fa import align
 
 def getopt2(name, options, default=None):
     val = [v for n, v in options if n == name]
-    if len(val) == 0:
+    if not val:
         return default
     return value[0]
 
