@@ -16,7 +16,8 @@ This HTK installation guide is retrieved from
 [Link](https://github.com/prosodylab/Prosodylab-Aligner).
 Installation is based on macOS Sierra.
 
-**Note:** I couldn't run HTK-3.4.1 on Arch Linux. I switched to 3.4.0
+**Note:** I couldn't run HTK-3.4.1 on Arch Lmaek
+inux. I switched to 3.4.0
 and everything works fine. Installation of HTK is the same as the one
 described below.
 
@@ -62,7 +63,7 @@ $ ln -s /opt/X11/include/X11 /usr/local/include/X11
 # Compile with options if necessary
 $ ./configure
 $ make all
-$ maek install
+$ make install
 ```
 
 
