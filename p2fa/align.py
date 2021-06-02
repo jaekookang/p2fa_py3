@@ -27,6 +27,7 @@ import argparse
 
 
 TEMP_DIR = os.path.join(tempfile.gettempdir(), 'p2fa')
+LOG_LIKELIHOOD_REGEX = r'.+==\s+\[\d+ frames\]\s+(-?\d+.\d+)'
 
 
 def prep_wav(orig_wav, out_wav, sr_override, wave_start, wave_end, sr_models):
@@ -236,6 +237,15 @@ def make_alignment_lists(word_alignments):
     return phons, wrds
 
 
+def get_av_log_likelihood_per_frame(file_path):
+    with open(file_path, 'r') as f:
+        lines = f.read().splitlines()
+
+    score = re.match(LOG_LIKELIHOOD_REGEX, lines[-1]).groups()[0]
+
+    return float(score)
+
+
 def write_text_grid(outfile, word_alignments, state_alignments=None) :
     # make the list of just phone alignments
     phons = []
@@ -390,6 +400,7 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     word_dictionary = os.path.join(TEMP_DIR, 'dict')
     input_mlf = os.path.join(TEMP_DIR, 'tmp.mlf')
     output_mlf = os.path.join(TEMP_DIR, 'aligned.mlf')
+    results_mlf = os.path.join(TEMP_DIR, 'aligned.results')
     if state_align:
         state_mlf = os.path.join(TEMP_DIR, 'aligned_state.mlf')
     else:
@@ -440,6 +451,8 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     _alignments = read_aligned_mlf(output_mlf, sr, float(wave_start))
     phoneme_alignments, word_alignments = make_alignment_lists(_alignments)
 
+    av_score_per_frame = get_av_log_likelihood_per_frame(results_mlf)
+
     # output the alignment as a Praat TextGrid
     if outfile is not None:
         write_text_grid(outfile, _alignments, state_alignments=state_alignments)
@@ -447,9 +460,9 @@ def align(wavfile, trsfile, outfile=None, wave_start='0.0', wave_end=None, sr_ov
     # clean directory
     delete_working_directory()
     if not state_align:
-        return phoneme_alignments, word_alignments
+        return phoneme_alignments, word_alignments, av_score_per_frame
     else:
-        return phoneme_alignments, word_alignments, state_alignments
+        return phoneme_alignments, word_alignments, state_alignments, av_score_per_frame
 
 
 if __name__ == '__main__':
