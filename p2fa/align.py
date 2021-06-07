@@ -22,6 +22,7 @@ import os
 import wave
 import re
 import shutil
+import statistics
 import tempfile
 import argparse
 
@@ -181,10 +182,8 @@ def read_aligned_mlf(mlffile, SR, wave_start):
     # This reads a MLFalignment output  file with phone and word
     # alignments and returns a list of words, each word is a list containing
     # the word label followed by the phones, each phone is a tuple
-    # (phone, start_time, end_time) with times in seconds.
-    #
-    # TODO: extract log-likelihood score
-    
+    # (phone, start_time, end_time, log_likelihood) with times in seconds and log likelihood scores.
+
     f = open(mlffile, 'r')
     lines = [l.rstrip() for l in f.readlines()]
     f.close()
@@ -203,6 +202,7 @@ def read_aligned_mlf(mlffile, SR, wave_start):
     
         # Append this phone to the latest word (sub-)list
         ph = lines[j].split()[2]
+        log_likelihood = float(lines[j].split()[3])
         if (SR == 11025):
             st = (float(lines[j].split()[0])/10000000.0 + 0.0125)*(11000.0/11025.0)
             en = (float(lines[j].split()[1])/10000000.0 + 0.0125)*(11000.0/11025.0)
@@ -210,7 +210,7 @@ def read_aligned_mlf(mlffile, SR, wave_start):
             st = float(lines[j].split()[0])/10000000.0 + 0.0125
             en = float(lines[j].split()[1])/10000000.0 + 0.0125   
         if st < en:
-            ret[-1].append([ph, st+wave_start, en+wave_start])
+            ret[-1].append([ph, st+wave_start, en+wave_start, log_likelihood])
  
         j += 1
     
@@ -225,15 +225,19 @@ def make_alignment_lists(word_alignments):
 
     # make the list of just word alignments
     # we're getting elements of the form:
-    #   ["word label", ["phone1", start, end], ["phone2", start, end], ...]
+    #   ["word label", ["phone1", start, end, score], ["phone2", start, end, score], ...]
     wrds = []
     for wrd in word_alignments:
         # If no phones make up this word, then it was an optional word
         # like a pause that wasn't actually realized.
         if len(wrd) == 1:
             continue
+
+        # get median word log likelihood score i.e. median of phoneme scores
+        word_log_likelihood = statistics.median([wrd[i][3] for i in range(1, len(wrd))])
+
         # word label, first phone start time, last phone end time
-        wrds.append([wrd[0], wrd[1][1], wrd[-1][2]])
+        wrds.append([wrd[0], wrd[1][1], wrd[-1][2], word_log_likelihood])
     return phons, wrds
 
 
