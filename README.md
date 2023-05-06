@@ -107,7 +107,7 @@ $ HVite
     (See: http://unixnme.blogspot.com/2018/01/build-htk-on-macos.html)
     ```
 * If you encounter `strarr.c:21:10: fatal error: 'malloc.h' file not found`, then comment out `#include <malloc.h>` and add `#include <stdlib.h>` instead as follows.
-    ![error1](./images/error1.png) (See: https://github.com/JoFrhwld/FAVE/issues/48#issue-602099201)
+    (See: https://github.com/JoFrhwld/FAVE/issues/48#issue-602099201) ![error1](./images/error1.png) 
 
 * If you see errors like `HTrain.c implicitly declaring library function 'finite'`, replace all `finite` functions in `HTKLib/HTrain.c` with `isfinite`. (See: https://trac.macports.org/ticket/61614)
 
@@ -159,8 +159,8 @@ With state-alignments
 ![image_of_ploppy_dot_png](p2fa/_tmp/ploppy_state.png)
 
 ## TODO
-[x] Updated installation guide
-[ ] Refactor `align.py`
+* [x] Updated installation guide
+* [ ] Refactor `align.py`
 
 ## References
 - http://www.ling.upenn.edu/phonetics/p2fa/
