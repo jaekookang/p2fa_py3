@@ -11,3 +11,8 @@ sox*
 py2fa/tmp
 .idea/
 .directory/
+
+# Personal
+.vscode
+HTK-3.4.1.tar.gz
+htk

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="p2fa",
-    version="0.0.1",
+    version="0.0.2",
     author="",
     author_email="",
     description="Python wrapper for Penn Forced Aligner",
